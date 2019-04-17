@@ -56,7 +56,6 @@ def import_data():
 # Preprocess the dataframe
 def normalize(df):
     scaler = preprocessing.MinMaxScaler()
-    distance = df['distance'].values
     y = df.iloc[:,-1] # x is Dataframe
     X = df.drop('loss', axis = 1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
