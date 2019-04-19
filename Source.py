@@ -1,4 +1,8 @@
-
+from __future__ import absolute_import, division, print_function
+'''
+This implementation follows the tutorial provided by tensorflow.org:
+https://www.tensorflow.org/tutorials/keras/basic_regression
+'''
 '''
 The dataset is taken under Creative Commons — Attribution 4.0 International — CC BY 4.0,
 from the following paper:
@@ -19,8 +23,6 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-#TODO: Đang tới phần denorm
 
 
 # Import dataset, return a panda dataframe
@@ -85,12 +87,38 @@ def build_model():
     return model
 
 
-def train_model(data):
-    (X_train, y_train), (X_test, y_test) = normalize(data)
-    model = build_model()
-    model.fit(X_train, y_train, epochs = 10)
+# Visualize the training progress
+def visualize(hist):
+    hist = pd.DataFrame(history.history)
+    hist['epoch'] = history.epoch
 
-# Train dữ liệu, in kết quả
+    plt.subplot2grid((1, 2), (0, 0))
+    plt.xlabel('Epoch')
+    plt.ylabel('Mean Abs Error [MPG]')
+    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Train Error')
+    plt.legend()
+
+    plt.subplot2grid((1, 2), (0, 1))
+    plt.xlabel('Epoch')
+    plt.ylabel('Mean Square Error [$MPG^2$]')
+    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Train Error')
+    plt.legend()
+    plt.show()
+
+
+def evaluate(y_test, y_predict):
+    plt.plot(y_predict)
+    plt.plot(y_predict, '.')
+    plt.axis('equal')
+    plt.axis('square')
+    plt.show()
+
+
+
 df = import_data()
-train_model(df)
-#X_train, X_test, y_train, y_test = normalize(df)
+(X_train, y_train), (X_test, y_test) = normalize(df)
+model = build_model()
+history = model.fit(X_train, y_train, epochs = 100)
+# visualize(history)
+y_predict = model.predict(X_test).flatten()
+evaluate(y_test, y_predict)
