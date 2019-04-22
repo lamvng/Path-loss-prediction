@@ -79,16 +79,16 @@ def build_model():
     model = keras.Sequential()
     model.add(layers.Dense(32, activation = tf.nn.relu, input_shape = (6,)))
     model.add(layers.Dense(32, activation = tf.nn.relu))
-    optimizer_function = keras.optimizers.RMSprop(lr = 0.001)
     model.add(layers.Dense(1)) 
+    optimizer_function = keras.optimizers.RMSprop(lr = 0.001)
     model.compile(loss = 'mean_squared_error',\
         optimizer = optimizer_function,\
-        metrics = ['mean_absolute_error', 'mean_squared_error'])
+        metrics = ['accuracy'])
     return model
 
 
 # Visualize the training progress
-def visualize(hist):
+def visualize(history):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
 
@@ -106,19 +106,14 @@ def visualize(hist):
     plt.show()
 
 
-def evaluate(y_test, y_predict):
-    plt.plot(y_predict)
-    plt.plot(y_predict, '.')
-    plt.axis('equal')
-    plt.axis('square')
-    plt.show()
 
 
 
 df = import_data()
 (X_train, y_train), (X_test, y_test) = normalize(df)
 model = build_model()
-history = model.fit(X_train, y_train, epochs = 100)
+history = model.fit(X_train, y_train, epochs = 1000)
 # visualize(history)
 y_predict = model.predict(X_test).flatten()
-evaluate(y_test, y_predict)
+score = model.evaluate(X_test, y_test)
+print(score)
