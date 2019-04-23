@@ -18,6 +18,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.callbacks import TensorBoard
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -57,7 +58,7 @@ def import_data():
 
 # Preprocess the dataframe
 def normalize(df):
-    scaler = preprocessing.MinMaxScaler()
+    # scaler = preprocessing.MinMaxScaler()
     y = df.iloc[:,-1] # x is Dataframe
     X = df.drop('loss', axis = 1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
@@ -77,9 +78,9 @@ def denormalize(norm_data):
 # Features: 6, label: 1
 def build_model():
     model = keras.Sequential()
-    model.add(layers.Dense(32, activation = tf.nn.relu, input_shape = (6,)))
-    model.add(layers.Dense(32, activation = tf.nn.relu))
-    model.add(layers.Dense(1)) 
+    model.add(layers.Dense(128, activation = tf.nn.relu, input_shape = (6,)))
+    model.add(layers.Dense(64, activation = tf.nn.relu))
+    model.add(layers.Dense(1))
     optimizer_function = keras.optimizers.RMSprop(lr = 0.001)
     model.compile(loss = 'mean_squared_error',\
         optimizer = optimizer_function,\
@@ -112,8 +113,8 @@ def visualize(history):
 df = import_data()
 (X_train, y_train), (X_test, y_test) = normalize(df)
 model = build_model()
-history = model.fit(X_train, y_train, epochs = 1000)
+history = model.fit(X_train, y_train, epochs = 10)
 # visualize(history)
 y_predict = model.predict(X_test).flatten()
-score = model.evaluate(X_test, y_test)
-print(score)
+loss, acc = model.evaluate(X_test, y_test)
+print('Accuracy: ' + str(acc))
