@@ -57,13 +57,12 @@ def import_data():
 
 
 # Preprocess the dataframe
-def normalize(df):
-    # scaler = preprocessing.MinMaxScaler()
+def preprocess(df):
+    scaler = preprocessing.MinMaxScaler()
     y = df.iloc[:,-1] # x is Dataframe
     X = df.drop('loss', axis = 1)
+    X = scaler.fit_transform(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-    y_train = y_train.astype(int)
-    y_test = y_test.astype(int)
     return (X_train, y_train), (X_test, y_test)
 
 
@@ -79,7 +78,7 @@ def denormalize(norm_data):
 def build_model():
     model = keras.Sequential()
     model.add(layers.Dense(128, activation = tf.nn.relu, input_shape = (6,)))
-    model.add(layers.Dense(64, activation = tf.nn.relu))
+    model.add(layers.Dense(64, activation = tf.nn.sigmoid))
     model.add(layers.Dense(1))
     optimizer_function = keras.optimizers.RMSprop(lr = 0.001)
     model.compile(loss = 'mean_squared_error',\
@@ -95,14 +94,14 @@ def visualize(history):
 
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
-    plt.ylabel('Mean Abs Error [MPG]')
-    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Train Error')
+    plt.ylabel('Loss')
+    plt.plot(hist['epoch'], hist['loss'], 'b', label = 'Loss')
     plt.legend()
 
     plt.subplot2grid((1, 2), (0, 1))
     plt.xlabel('Epoch')
-    plt.ylabel('Mean Square Error [$MPG^2$]')
-    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Train Error')
+    plt.ylabel('Accuracy')
+    plt.plot(hist['epoch'], hist['acc'], 'r', label = 'Accuracy')
     plt.legend()
     plt.show()
 
@@ -111,9 +110,9 @@ def visualize(history):
 
 
 df = import_data()
-(X_train, y_train), (X_test, y_test) = normalize(df)
+(X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
-history = model.fit(X_train, y_train, epochs = 10)
+history = model.fit(X_train, y_train, epochs = 100)
 # visualize(history)
 y_predict = model.predict(X_test).flatten()
 loss, acc = model.evaluate(X_test, y_test)
