@@ -62,6 +62,7 @@ def preprocess(df):
     y = df.iloc[:,-1] # x is Dataframe
     X = df.drop('loss', axis = 1)
     X = scaler.fit_transform(X)
+    y = y.astype(int)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
     return (X_train, y_train), (X_test, y_test)
 
@@ -113,7 +114,7 @@ df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
 history = model.fit(X_train, y_train, epochs = 100)
-# visualize(history)
+visualize(history)
 y_predict = model.predict(X_test).flatten()
 loss, acc = model.evaluate(X_test, y_test)
 print('Accuracy: ' + str(acc))
