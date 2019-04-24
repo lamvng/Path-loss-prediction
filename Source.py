@@ -1,24 +1,8 @@
 from __future__ import absolute_import, division, print_function
-'''
-This implementation follows the tutorial provided by tensorflow.org:
-https://www.tensorflow.org/tutorials/keras/basic_regression
-'''
-'''
-The dataset is taken under Creative Commons — Attribution 4.0 International — CC BY 4.0,
-from the following paper:
-
-S.I. Popoola, A.A. Atayero, O.D. Arausi, V.O. Matthews
-Path loss dataset for modeling radio wave propagation in smart campus environment
-Data Brief., 17 (2018), pp. 1062-1073
-https://doi.org/10.1016/j.dib.2018.02.026
-https://www.sciencedirect.com/science/article/pii/S2352340918301422?via%3Dihub#bibliog0005
-'''
 import os
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras.callbacks import TensorBoard
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -26,6 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+# path = 'D:\Important\PFIEV\Wireless Communication\Project\Path-loss-prediction\dataset.csv'
 # Import dataset, return a panda dataframe
 def import_data():
     path = os.getcwd()
@@ -69,8 +54,8 @@ def preprocess(df):
 
 def denormalize(norm_data):
     norm_data = norm_data.reshape(-1,1)
-    scl = preprocessing.MinMaxScaler()
-    denorm_data = scl.inverse_transform(norm_data)
+    scaler = preprocessing.MinMaxScaler()
+    denorm_data = scaler.inverse_transform(norm_data)
     return denorm_data
 
 
@@ -78,43 +63,56 @@ def denormalize(norm_data):
 # Features: 6, label: 1
 def build_model():
     model = keras.Sequential()
-    model.add(layers.Dense(128, activation = tf.nn.relu, input_shape = (6,)))
-    model.add(layers.Dense(64, activation = tf.nn.sigmoid))
+    model.add(layers.Dense(32, activation = tf.nn.relu, input_shape = (6,)))
+    model.add(layers.Dense(32, activation = tf.nn.relu))
     model.add(layers.Dense(1))
     optimizer_function = keras.optimizers.RMSprop(lr = 0.001)
-    model.compile(loss = 'mean_squared_error',\
+    model.compile(loss = 'mean_absolute_error',\
         optimizer = optimizer_function,\
-        metrics = ['accuracy'])
+        metrics = ['mean_absolute_error', 'mean_squared_error'])
     return model
 
 
 # Visualize the training progress
-def visualize(history):
+#TODO: Print the last epoch loss
+def plot_training(history):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
-
+    '''
+    plt.figure()
+    plt.xlabel('Epoch')
+    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Train Error')
+    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Train Error')
+    plt.legend()
+    plt.show()
+    '''
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(hist['epoch'], hist['loss'], 'b', label = 'Loss')
+    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Error')
     plt.legend()
 
     plt.subplot2grid((1, 2), (0, 1))
     plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.plot(hist['epoch'], hist['acc'], 'r', label = 'Accuracy')
+    plt.ylabel('Loss')
+    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Error')
     plt.legend()
     plt.show()
 
 
-
+# Visualize and evaluate the model
+def plot_test(y_test, y_predict):
+    error = y_predict - y_test
+    plt.hist(error)
+    plt.xlabel('Prediction Error')
+    plt.show()
 
 
 df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
 history = model.fit(X_train, y_train, epochs = 100)
-visualize(history)
+# plot_training(history)
 y_predict = model.predict(X_test).flatten()
-loss, acc = model.evaluate(X_test, y_test)
-print('Accuracy: ' + str(acc))
+# score = model.evaluate(X_test, y_test)
+plot_test(y_test, y_predict)
