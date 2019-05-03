@@ -74,27 +74,28 @@ def build_model():
 
 # Train and save model
 def train(model, X_train, y_train):
-    history = model.fit(X_train, y_train, epochs = 100)
+    csv_logger = keras.callbacks.CSVLogger('training.log', separator = ',', append = False)
+    history = model.fit(X_train, y_train, epochs = 100, callbacks=[csv_logger])
     model.save('model.h5')
     return history
 
 
 # Visualize the training progress
 #TODO: Print the last epoch loss
-def plot_training(history):
+def plot_training(history, score):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
 
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Error')
+    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Converged Mean Absolute Error: %.4f' %score[0])
     plt.legend()
 
     plt.subplot2grid((1, 2), (0, 1))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Error')
+    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Converged Mean Squared Error: %.4f' %score[2])
     plt.legend()
     plt.show()
 
@@ -111,7 +112,7 @@ df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
 history = train(model, X_train, y_train)
-plot_training(history)
 y_predict = model.predict(X_test).flatten()
 score = model.evaluate(X_test, y_test)
 plot_test(y_test, y_predict)
+plot_training(history, score)
