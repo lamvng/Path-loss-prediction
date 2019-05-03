@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-# path = 'D:\Important\PFIEV\Wireless Communication\Project\Path-loss-prediction\dataset.csv'
 # Import dataset, return a panda dataframe
 def import_data():
     path = os.getcwd()
@@ -73,19 +72,19 @@ def build_model():
     return model
 
 
+# Train and save model
+def train(model, X_train, y_train):
+    history = model.fit(X_train, y_train, epochs = 100)
+    model.save('model.h5')
+    return history
+
+
 # Visualize the training progress
 #TODO: Print the last epoch loss
 def plot_training(history):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
-    '''
-    plt.figure()
-    plt.xlabel('Epoch')
-    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Mean Absolute Train Error')
-    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Mean Squared Train Error')
-    plt.legend()
-    plt.show()
-    '''
+
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
@@ -111,8 +110,8 @@ def plot_test(y_test, y_predict):
 df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
-history = model.fit(X_train, y_train, epochs = 100)
-# plot_training(history)
+history = train(model, X_train, y_train)
+plot_training(history)
 y_predict = model.predict(X_test).flatten()
-# score = model.evaluate(X_test, y_test)
+score = model.evaluate(X_test, y_test)
 plot_test(y_test, y_predict)
