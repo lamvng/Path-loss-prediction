@@ -51,14 +51,7 @@ def preprocess(df):
     return (X_train, y_train), (X_test, y_test)
 
 
-def denormalize(norm_data):
-    norm_data = norm_data.reshape(-1,1)
-    scaler = preprocessing.MinMaxScaler()
-    denorm_data = scaler.inverse_transform(norm_data)
-    return denorm_data
-
-
-# Build the model with tensorflow
+# Build the model
 # Features: 6, label: 1
 def build_model():
     model = keras.Sequential()
@@ -81,7 +74,6 @@ def train(model, X_train, y_train):
 
 
 # Visualize the training progress
-#TODO: Print the last epoch loss
 def plot_training(history, score):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
@@ -89,13 +81,15 @@ def plot_training(history, score):
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b', label = 'Converged Mean Absolute Error: %.4f' %score[0])
+    plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b',\
+        label = 'Converged Mean Absolute Error: %.4f' %score[0])
     plt.legend()
 
     plt.subplot2grid((1, 2), (0, 1))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r', label = 'Converged Mean Squared Error: %.4f' %score[2])
+    plt.plot(hist['epoch'], hist['mean_squared_error'], 'r',\
+        label = 'Converged Mean Squared Error: %.4f' %score[2])
     plt.legend()
     plt.show()
 
