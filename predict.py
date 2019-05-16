@@ -1,4 +1,5 @@
 from __future__ import absolute_import, division, print_function
+import numpy as np
 import os
 import tensorflow as tf
 from tensorflow import keras
@@ -77,14 +78,12 @@ def train(model, X_train, y_train):
 def plot_training(history, score):
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
-
     plt.subplot2grid((1, 2), (0, 0))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.plot(hist['epoch'], hist['mean_absolute_error'], 'b',\
         label = 'Converged Mean Absolute Error: %.4f' %score[0])
     plt.legend()
-
     plt.subplot2grid((1, 2), (0, 1))
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
@@ -94,19 +93,38 @@ def plot_training(history, score):
     plt.show()
 
 
+# Visualize the predicted distribution
+def plot_predict(y_predict):
+    plt.hist(y_predict, range = (120, 160))
+    plt.title('Predicted Values Distribution')
+    plt.show()
+
+
+# Visualize the test set distribution
+def plot_test(y_test):
+    plt.hist(y_test, range = (120, 160))
+    plt.title('Test Dataset Distribution')
+    plt.show()
+
+
 # Visualize and evaluate the model
-def plot_test(y_test, y_predict):
+def plot_error(y_test, y_predict):
     error = y_predict - y_test
     plt.hist(error)
-    plt.xlabel('Prediction Error')
+    plt.title('Prediction Error Distribution')
+    print('Standard Deviation: ' + str(np.std(error)))
+    print('Mean: ' + str(np.mean(error)))
     plt.show()
+    return error
 
 
 df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
 history = train(model, X_train, y_train)
+score = model.evaluate(X_test, y_test) # MAE, MSE
 y_predict = model.predict(X_test).flatten()
-score = model.evaluate(X_test, y_test)
-plot_test(y_test, y_predict)
 plot_training(history, score)
+plot_predict(y_predict)
+plot_test(y_test)
+plot_error(y_test, y_predict)
