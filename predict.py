@@ -66,10 +66,21 @@ def build_model():
     return model
 
 
+# Build the linear regression model
+# Only one neuron and one layer
+def build_linear():
+    model = keras.Sequential([layers.Dense(1, activation = 'linear', input_shape = (6,))])
+    optimizer_function = keras.optimizers.SGD()
+    model.compile(loss = 'mean_absolute_error',\
+        optimizer = optimizer_function,\
+        metrics = ['mean_absolute_error', 'mean_squared_error'])
+    return model
+
+
 # Train and save model
 def train(model, X_train, y_train):
     csv_logger = keras.callbacks.CSVLogger('training.log', separator = ',', append = False)
-    history = model.fit(X_train, y_train, epochs = 100, callbacks=[csv_logger])
+    history = model.fit(X_train, y_train, epochs = 1000, callbacks=[csv_logger])
     model.save('model.h5')
     return history
 
@@ -112,8 +123,7 @@ def plot_error(y_test, y_predict):
     error = y_predict - y_test
     plt.hist(error)
     plt.title('Prediction Error Distribution')
-    print('Standard Deviation: ' + str(np.std(error)))
-    print('Mean: ' + str(np.mean(error)))
+
     plt.show()
     return error
 
@@ -121,6 +131,8 @@ def plot_error(y_test, y_predict):
 df = import_data()
 (X_train, y_train), (X_test, y_test) = preprocess(df)
 model = build_model()
+model_linear = build_linear()
+
 history = train(model, X_train, y_train)
 score = model.evaluate(X_test, y_test) # MAE, MSE
 y_predict = model.predict(X_test).flatten()
@@ -128,3 +140,5 @@ plot_training(history, score)
 plot_predict(y_predict)
 plot_test(y_test)
 plot_error(y_test, y_predict)
+# np.std(error)
+# score[0]
